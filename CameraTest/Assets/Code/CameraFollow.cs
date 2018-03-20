@@ -7,6 +7,7 @@ public class CameraFollow : MonoBehaviour
     public float m_fDistance = 5f;
     public float m_fSpeed = 5f;
     public float m_fRotationSpeed = 10f;
+    public float m_fGroundDist = 1.6f;
     public CharacterController m_tTarget;    
 
     private void Awake()
@@ -35,28 +36,26 @@ public class CameraFollow : MonoBehaviour
             {
                 if(rayHit.transform.rotation != Quaternion.identity)
                 {
-                    slopeRotation.x = rayHit.transform.rotation.z;
-                    newPos.y += Mathf.Sin(slopeRotation.x) * m_fDistance;
+                    slopeRotation.x = rayHit.transform.rotation.z;                   
                 }
             }
             if (hit.transform.rotation != Quaternion.identity)
             {
-                slopeRotation.x = hit.transform.rotation.z;
-                newPos.y += Mathf.Sin(slopeRotation.x) * m_fDistance;
-
-                if (Physics.Raycast(transform.position, -Vector3.up, out rayHit, 2f))
-                {
-                    if (Vector3.Distance(rayHit.point, transform.position) < 1f)
-                    {
-                        newPos.y += Vector3.Distance(rayHit.point, transform.position);
-                    }
-                }
+                slopeRotation.x = hit.transform.rotation.z;                           
             }
             else
             {
                 newPos = hit.point + m_tTarget.transform.forward * 0.2f;
             }            
-        } 
+        }
+
+        if (Physics.Raycast(transform.position, -Vector3.up, out rayHit, 2f))
+        {
+            if (Vector3.Distance(rayHit.point, transform.position) < m_fGroundDist)
+            {                
+                newPos.y += (m_fGroundDist - Vector3.Distance(rayHit.point, transform.position));
+            }
+        }
 
         transform.position = Vector3.Slerp(transform.position, newPos, m_fSpeed * Time.deltaTime);
         transform.rotation = Quaternion.Slerp(transform.rotation, m_tTarget.transform.rotation * slopeRotation, m_fRotationSpeed * Time.deltaTime);        
